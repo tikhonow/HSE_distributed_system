@@ -1,0 +1,36 @@
+@startuml
+title Three-Tier Architecture Component Diagram
+
+' Define colors for components
+!define CLIENT_COLOR #ADD8E6
+!define WEBSERVER_COLOR #90EE90
+!define APPSERVER_COLOR #FFA07A
+!define DATABASE_COLOR #FFD700
+
+skinparam componentStyle rectangle
+
+' Configure component styles
+skinparam component {
+    BackgroundColor<<Client>> CLIENT_COLOR
+    BackgroundColor<<WebServer>> WEBSERVER_COLOR
+    BackgroundColor<<AppServer>> APPSERVER_COLOR
+    BackgroundColor<<Database>> DATABASE_COLOR
+    BorderColor Black
+    FontColor Black
+}
+
+' Define components
+component "Client" <<Client>> as Client
+component "Web Server" <<WebServer>> as WebServer
+component "Application Server" <<AppServer>> as AppServer
+database "Database" <<Database>> as Database
+
+' Define relationships between components
+Client --> WebServer : HTTP POST (number)
+WebServer --> AppServer : Process Request
+AppServer --> Database : SQL Query
+Database --> AppServer : Query Result
+AppServer --> WebServer : Response
+WebServer --> Client : HTTP Response
+
+@enduml

@@ -1,0 +1,58 @@
+@startuml
+title Sequence Diagram for Number Processing
+
+' Configure participant styles
+skinparam participant {
+    BackgroundColor #F0E68C
+    BorderColor Black
+    FontColor Black
+    FontSize 12
+}
+
+skinparam sequence {
+    ArrowColor Navy
+    LifeLineBorderColor Blue
+    LifeLineBackgroundColor LightBlue
+    NoteBackgroundColor #FFFFE0
+    NoteBorderColor Black
+}
+
+actor Client
+participant "Web Server" as WebServer
+participant "Application Server" as AppServer
+database "Database" as Database
+
+Client -> WebServer : HTTP POST (number)
+activate WebServer
+
+WebServer -> AppServer : Process Request(number)
+activate AppServer
+
+AppServer -> Database : Check if number exists
+activate Database
+
+alt Number already processed (Exception #1)
+    Database --> AppServer : Number exists
+    deactivate Database
+    AppServer --> WebServer : Error Response
+    note right of AppServer : Log Error (Number already processed)
+else Number is one less than processed (Exception #2)
+    Database --> AppServer : (Number + 1) exists
+    deactivate Database
+    AppServer --> WebServer : Error Response
+    note right of AppServer : Log Error (Invalid number sequence)
+else New number
+    Database --> AppServer : Number not found
+    deactivate Database
+    AppServer -> Database : Save number
+    activate Database
+    Database --> AppServer : Confirmation
+    deactivate Database
+    AppServer --> WebServer : Number + 1
+end
+
+deactivate AppServer
+WebServer --> Client : HTTP Response
+deactivate WebServer
+
+@enduml
