@@ -1,0 +1,42 @@
+services:
+  web:
+    build:
+      context: .
+    container_name: django_app
+    ports:
+      - "8000:8000"
+    environment:
+      - hostDB=db
+      - nameDB=test_dev_iot
+      - userDB=test
+      - passDB=testpassword
+      - logPath=./example.txt
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python number_processor/manage.py makemigrations && python number_processor/manage.py migrate && python number_processor/manage.py runserver 0.0.0.0:8000"
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: test_dev_iot
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: testpassword
+      SECRET_KEY: django-insecure-*6%&nrgm9#2i&_k0h2ib#!1h*+2jjk^x-@%88q#^2!a$&d2(s5
+      DEBUG: True
+      ALLOWED_HOSTS: localhost,127.0.0.1
+
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d test_dev_iot"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+volumes:
+  db_data: {}

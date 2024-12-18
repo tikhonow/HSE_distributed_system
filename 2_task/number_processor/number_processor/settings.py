@@ -78,10 +78,17 @@ WSGI_APPLICATION = 'number_processor.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('nameDB', 'test'),
+        'USER': os.getenv('userDB', 'test'),
+        'PASSWORD': os.getenv('passDB', 'test'),
+        'HOST': os.getenv('hostDB', 'localhost'),
+        'PORT': '5432',
     }
 }
+
+# Path to log file
+LOG_PATH = os.getenv('logPath', './example.txt')
 
 
 # Password validation

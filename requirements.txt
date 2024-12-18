@@ -1,0 +1,6 @@
+asgiref
+Django>=4.0
+psycopg2>=2.9
+djangorestframework
+python-dotenv
+sqlparse
