@@ -1,8 +1,36 @@
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: django-config
+  namespace: default
+  labels:
+    app: django-app
+data:
+  hostDB: "${HOST_DB}"
+  nameDB: "${NAME_DB}"
+  userDB: "${USER_DB}"
+  logPath: "${LOG_PATH}"
+  DEBUG: "${DEBUG}"
+  ALLOWED_HOSTS: "${ALLOWED_HOSTS}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: django-secret
+  namespace: default
+  labels:
+    app: django-app
+type: Opaque
+data:
+  passDB: "${PASS_DB}" # Base64-encoded environment variable
+  SECRET_KEY: "${SECRET_KEY}" # Base64-encoded environment variable
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: django-app
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -18,34 +46,17 @@ spec:
         image: tikhonow/distrub:latest
         ports:
         - containerPort: 8000
-        env:
-        - name: hostDB
-          value: "postgres-service" # Сервис базы данных
-        - name: nameDB
-          value: "test_dev_iot"
-        - name: userDB
-          value: "test"
-        - name: passDB
-          value: "testpassword"
-        - name: logPath
-          value: "./example.txt"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: django-service
-spec:
-  selector:
-    app: django-app
-  ports:
-  - protocol: TCP
-    port: 8000
-    targetPort: 8000
+        envFrom:
+        - configMapRef:
+            name: django-config
+        - secretRef:
+            name: django-secret
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres-deployment
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -61,18 +72,41 @@ spec:
         image: postgres:15
         env:
         - name: POSTGRES_DB
-          value: "test_dev_iot"
+          valueFrom:
+            configMapKeyRef:
+              name: django-config
+              key: nameDB
         - name: POSTGRES_USER
-          value: "test"
+          valueFrom:
+            configMapKeyRef:
+              name: django-config
+              key: userDB
         - name: POSTGRES_PASSWORD
-          value: "testpassword"
+          valueFrom:
+            secretKeyRef:
+              name: django-secret
+              key: passDB
         ports:
         - containerPort: 5432
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  name: django-service
+  namespace: default
+spec:
+  selector:
+    app: django-app
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: postgres-service
+  namespace: default
 spec:
   selector:
     app: postgres
