@@ -1,9 +1,14 @@
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-24
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: django-config
-  namespace: default
+  namespace: ns-24
   labels:
     app: django-app
 data:
@@ -18,7 +23,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: django-secret
-  namespace: default
+  namespace: ns-24
   labels:
     app: django-app
 type: Opaque
@@ -30,7 +35,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: django-app
-  namespace: default
+  namespace: ns-24
 spec:
   replicas: 1
   selector:
@@ -56,7 +61,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres-deployment
-  namespace: default
+  namespace: ns-24
 spec:
   replicas: 1
   selector:
@@ -93,7 +98,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: django-service
-  namespace: default
+  namespace: ns-24
 spec:
   selector:
     app: django-app
@@ -106,7 +111,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres-service
-  namespace: default
+  namespace: ns-24
 spec:
   selector:
     app: postgres
@@ -114,3 +119,23 @@ spec:
     - protocol: TCP
       port: 5432
       targetPort: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: django-ingress
+  namespace: ns-24
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: django-app.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: django-service
+            port:
+              number: 8000
