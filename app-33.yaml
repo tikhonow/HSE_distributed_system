@@ -141,3 +141,10 @@ spec:
             name: django-service
             port:
               number: 8000
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: django-service
+            port:
+              number: 8000
