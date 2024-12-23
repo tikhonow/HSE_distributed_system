@@ -126,7 +126,8 @@ metadata:
   name: django-ingress
   namespace: ns-24
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    haproxy.org/ssl-redirect: "true"
+    haproxy.org/ingress.class: "haproxy" 
 spec:
   rules:
   - host: django-app.local
