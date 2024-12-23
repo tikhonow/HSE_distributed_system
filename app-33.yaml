@@ -129,6 +129,7 @@ metadata:
     haproxy.org/ssl-redirect: "true"
     haproxy.org/ingress.class: "haproxy" 
 spec:
+  ingressClassName: haproxy
   rules:
   - host: django-app.local
     http:
